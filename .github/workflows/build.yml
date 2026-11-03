@@ -1,0 +1,43 @@
+name: Build FFmpeg for DropWheel
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish the build as a release (tag from build.sh)'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ['build.sh', '.github/workflows/build.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [win64]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        id: build
+        run: ./build.sh ${{ matrix.target }} out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ffmpeg-${{ matrix.target }}
+          path: |
+            out/*.zip
+            out/*-source.tar.gz
+          if-no-files-found: error
+      - name: Release
+        if: ${{ github.event.inputs.release == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.build.outputs.package }}"
+          gh release create "$TAG" --title "$TAG" --notes-file README.md out/*.zip out/*-source.tar.gz || \
+            gh release upload "$TAG" out/*.zip out/*-source.tar.gz --clobber
