@@ -177,8 +177,10 @@ cd /work
 git init -q ffmpeg && cd ffmpeg
 git fetch -q --depth 1 https://github.com/FFmpeg/FFmpeg.git $FFMPEG_COMMIT
 git checkout -q FETCH_HEAD
+# With autodetection off, configure looks for iconv in the C library only (mingw has none) and so never links the
+# libiconv it compiled against: it is named here.
 ./configure \$FFBUILD_TARGET_FLAGS $(printf "'%s' " "${CONFIGURE[@]}") \\
-    --extra-cflags="\$FF_CFLAGS" --extra-cxxflags="\$FF_CXXFLAGS" --extra-libs="\$FF_LIBS" \\
+    --extra-cflags="\$FF_CFLAGS" --extra-cxxflags="\$FF_CXXFLAGS" --extra-libs="\$FF_LIBS -liconv" \\
     --extra-ldflags="\$FF_LDFLAGS" --extra-ldexeflags="\$FF_LDEXEFLAGS" \\
     --cc="\$CC" --cxx="\$CXX" --ar="\$AR" --ranlib="\$RANLIB" --nm="\$NM" \\
     --extra-version=dropwheel || { tail -300 ffbuild/config.log; exit 1; }
