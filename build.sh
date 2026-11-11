@@ -48,6 +48,8 @@ DECODERS=(
     # subtitles
     ass ssa srt subrip movtext webvtt text microdvd subviewer subviewer1 sami realtext mpl2 pjs jacosub vplayer stl
     dvdsub dvbsub pgssub xsub ccaption
+    # FFmpeg's own pictures and sound as filters make them: what a lavfi source (-f lavfi -i color=...) hands on
+    wrapped_avframe
 )
 ENCODERS=(
     # Windows' own encoders for the patented formats
